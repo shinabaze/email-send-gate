@@ -1,0 +1,43 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        postgres: [13, 17]
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install psycopg2-binary
+      - run: python -m unittest discover -s tests -t . -v
+      - run: python examples/walkthrough.py
+      - name: Every commit is mine, with no trailers
+        run: |
+          me='Shinabaze Ajiya <198176976+shinabaze@users.noreply.github.com>'
+          if git log --format='%an <%ae>' | sort -u | grep -vxF "$me"; then
+            echo "a commit has another author"; exit 1
+          fi
+          if git log --format='%cn <%ce>' | sort -u | grep -vxF -e "$me" -e 'GitHub <noreply@github.com>'; then
+            echo "a commit has another committer"; exit 1
+          fi
+          if git log --format='%(trailers:only,unfold)' | grep -q .; then
+            echo "a commit message has a trailer"; exit 1
+          fi
