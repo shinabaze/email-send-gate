@@ -62,9 +62,9 @@ may_send('dana@example.com', 'newsletter', 'marketing')
 
 -- the newsletter goes out
 may_send('dana@example.com', 'newsletter', 'marketing')
-  -> {"allow": false, "reason": "cooldown", "detail": "..."}
+  -> {"allow": false, "detail": "2026-10-18T18:36:50+00:00", "reason": "cooldown"}
 may_send('dana@example.com', 'outbound', 'marketing')
-  -> {"allow": false, "reason": "owned_by_other_sender", "detail": "newsletter"}
+  -> {"allow": false, "detail": "newsletter", "reason": "owned_by_other_sender"}
 may_send('dana@example.com', 'shop', 'transactional')
   -> {"allow": true, "reason": "ok"}
 
